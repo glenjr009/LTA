@@ -1,108 +1,78 @@
-💰 Dhan Sakshi (धन साक्षी)
-Problem Statement ID: PS-25149 (Loan Utilization Tracking via Mobile App)
+# 💰 Dhan Sakshi (धन साक्षी) – Loan Utilization Tracker  
 
-Theme: Smart Automation
+🚀 "Making sure every loan tells its true story"  
 
-Team: Hexa Titans
+Hey there 👋, welcome to Dhan Sakshi (meaning "Money Witness").  
+This is our attempt (Team Hexa Titans 🚀) to solve a very real problem in lending:  
+👉 loan money often gets misused, and 👉 banks spend way too much time & money on manual checks.  
 
-🚀 Overview
-Dhan Sakshi (meaning "Money Witness") is an AI-powered, mobile-first platform designed to solve the critical problem of loan fund misuse and high manual verification costs faced by lending agencies and banks.
+So, we built a mobile-first, AI-powered solution that makes loan utilization tracking a lot smarter and more transparent.  
 
-Our solution introduces Smart Automation into the asset verification process, allowing borrowers to submit proof easily, even in areas with poor network coverage, while instantly flagging potential fraud for officers.
+---
 
-✨ Core Innovations
-Innovation
+## 🌟 What’s the idea?  
 
-Description
+📱 Offline-First Proof – Borrowers can click photos/videos of purchased assets and save them even if there’s no internet. As soon as they’re back online, everything syncs automatically.  
 
-Impact
+🤖 AI Fraud Checks – Our backend scans uploads for tampering, weird anomalies, or geo mismatches and flags suspicious cases instantly.  
 
-Offline-First Submission
+🔗 Blockchain Audit Trail (future scope) – Every decision (approve/reject) can be logged immutably for compliance & trust.  
 
-Beneficiaries can capture photos/videos of purchased assets and save them locally. The data automatically syncs to the cloud the moment network connectivity is restored.
+In short: fewer field visits, faster approvals, and less fraud.  
 
-Eliminates field visit dependency and ensures data capture is possible anywhere, improving efficiency in rural areas.
+---
 
-AI-Powered Fraud Detection
+## 💻 Tech We Used  
 
-The backend analyzes uploaded media for anomalies, metadata tampering, and geo-fencing violations.
+Frontend (Mobile Prototype)  
+- React (simulating React Native)  
+- Tailwind CSS (with our cyber-teal theme ✨)  
+- LocalStorage demo for offline-first behavior  
 
-Instantly flags "Suspicious" cases, allowing officers to approve verified cases instantly and focus manual efforts only on high-risk cases.
+Backend (API + Logic)  
+- Node.js + Express  
+- Mock DBs: MongoDB (for media metadata) & PostgreSQL (for structured case data)  
+- Endpoints for syncing, officer review, and AI simulation  
 
-Immutability (Future Scope)
+---
 
-All final approval/rejection decisions are logged to a mock Blockchain Ledger.
+## ⚡ How to Run It  
 
-Ensures a tamper-proof audit trail for regulatory compliance and transparency.
+### Prerequisite: Node.js installed  
 
-💻 Technical Stack
-The prototype is built as a highly performant, two-part application:
-
-Frontend (Mobile Prototype)
-Technology: React (Simulating a high-fidelity React Native application).
-
-Styling: Tailwind CSS with custom Cyber-Teal aesthetics for a professional, high-impact console look.
-
-Key Feature Demo: Local Storage simulation for the Offline-First capability.
-
-Backend (API Gateway & Logic)
-Technology: Node.js (Express) with CORS enabled for development.
-
-Database (Mocked): In-memory storage simulating MongoDB (for media metadata) and PostgreSQL (for structured case data).
-
-Core Logic: Contains the API endpoints for user sync, officer review, and the AI Simulation script.
-
-🛠️ Setup and Installation
-Follow these steps to run the application locally in your VS Code environment.
-
-Prerequisites
-You must have Node.js (includes npm) installed on your machine.
-
-1. Backend Setup
-The backend runs on Port 5000.
-
-Navigate to the backend/ folder in your terminal.
-
+### Backend (Port 5000)  
+```bash
 cd backend
-
-Install Node.js dependencies:
-
 npm install
-
-Start the server:
-
 node index.js
 
-(The terminal should show: Node.js Backend Server running on http://localhost:5000)
+### You should see:
+Node.js Backend Server running on http://localhost:5000
 
-2. Frontend Setup
-The frontend runs on Port 3000. Keep the backend server running!
+Frontend (Port 3000)
 
-Open a NEW terminal window and navigate to the frontend/ folder.
+(Keep the backend running in another terminal)
 
 cd frontend
-
-Install React dependencies (if not done yet):
-
 npm install
-
-Start the React application:
-
 npm start
 
-The application will automatically open in your browser at http://localhost:3000.
+Your browser will automatically open at 👉 http://localhost:3000
 
-💡 How to Demo (The Golden Path)
-Use this script flow to impress the jury:
+💡 Why it matters
 
-Start on the Beneficiary Tab: Point to the Mobile Frame and state the Offline-First capability.
+🌍 Works in rural areas where internet is patchy
+⚡ Officers spend less time chasing genuine borrowers
+🛡️ Banks save money and get tamper-proof transparency
 
-Go Offline: Click the ON toggle switch to set it to OFF (Red).
+🚀 What’s Next
 
-Capture Proof and click Save Proof Locally (Offline). Observe the pending count increase.
+Real blockchain integration
 
-Sync Trigger: Switch the toggle back to ON (Green). Click Sync All Pending Case(s).
+Smarter AI fraud detection models
 
-The Reveal: Immediately switch to the Officer (AI/Remote Review Dashboard) tab. The new case will appear, instantly flagged by the AI script.
+Hooking up with real databases for scale
 
-Impact: Click the case, point to the AI Status, and finalize the review by clicking Approve Loan Use.
+🏆 Built by
+
+Hexa Titans with ❤️, coffee, and a lot of debugging.
