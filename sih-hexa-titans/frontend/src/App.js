@@ -1,9 +1,9 @@
-import React, { useState, useEffect, useCallback, useMemo } from 'react';
+import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react'; 
 import { Camera, Upload, AlertTriangle, CheckCircle, Wifi, WifiOff, MapPin, Loader, TrendingUp, Cpu, Users, RefreshCw } from 'lucide-react';
-// import './App.css'; // REMOVED: CSS file has been deleted, so we remove this line.
+// import './App.css'; // Assuming custom CSS is either inline or handled externally
 
 // --- CONFIGURATION ---
-const API_BASE_URL = 'http://localhost:5000'; 
+// Removed API_BASE_URL to clean up ESLint warning. URL is now directly in fetch calls.
 const LOCAL_STORAGE_KEY = 'sih_offline_uploads';
 
 // --- Utility Functions ---
@@ -46,14 +46,109 @@ const BeneficiaryApp = ({ onSyncComplete }) => {
   const [message, setMessage] = useState('');
   const [localUploads, setLocalUploads] = useState(getLocalUploads());
   const [isOfflineMode, setIsOfflineMode] = useState(false); 
+  const [isCameraActive, setIsCameraActive] = useState(false);
+  const [currentGps, setCurrentGps] = useState(null); 
+  const [currentCity, setCurrentCity] = useState(null); // NEW: State to hold city name
+  
+  const videoRef = useRef(null); 
+  const streamRef = useRef(null); 
 
   const isOnline = useOnlineStatus() && !isOfflineMode;
   const SyncIcon = isOnline ? Wifi : WifiOff;
 
-  const handleCaptureImage = () => {
-    setMessage('');
-    setCapturedImage(`https://placehold.co/400x300/14b8a6/FFFFFF?text=Asset+Photo+${Date.now()}`);
+  // NEW FUNCTION: Get Live GPS Location
+  const getGeoLocation = () => {
+    return new Promise((resolve, reject) => {
+      if (!navigator.geolocation) {
+        reject('Geolocation not supported.');
+        return;
+      }
+      // Request location with timeout for faster response
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          const coords = `${position.coords.latitude.toFixed(4)}° N, ${position.coords.longitude.toFixed(4)}° E`;
+          const city = mockReverseGeocode(position.coords.latitude, position.coords.longitude);
+          resolve({ coords, city });
+        },
+        (error) => {
+          console.error("Geolocation Error:", error);
+          reject(`Location failed (${error.code}). Using approximate coordinates.`);
+        },
+        { enableHighAccuracy: true, timeout: 5000, maximumAge: 0 }
+      );
+    });
   };
+
+  // NEW FUNCTION: Mock Reverse Geocoding (Converts coords to a city name for demo)
+  const mockReverseGeocode = (lat, lon) => {
+    // Check if location is near a known area for a realistic feel
+    if (lat > 12 && lat < 14 && lon > 76 && lon < 78) return "Bengaluru, Karnataka";
+    if (lat > 18 && lat < 20 && lon > 72 && lon < 74) return "Mumbai, Maharashtra";
+    return "Nearby Village, India";
+  };
+
+
+  // Function to start the camera stream
+  const startCamera = async () => {
+    setMessage({ type: 'info', text: 'Requesting camera and location...' });
+    setCapturedImage(null);
+    setCurrentGps(null); 
+    setCurrentCity(null);
+
+    try {
+      // 1. Request Camera Access
+      const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } });
+      streamRef.current = stream;
+      if (videoRef.current) {
+        videoRef.current.srcObject = stream;
+        videoRef.current.play();
+      }
+      setIsCameraActive(true);
+      
+      // 2. Request Geolocation
+      const locationData = await getGeoLocation();
+      setCurrentGps(locationData.coords);
+      setCurrentCity(locationData.city);
+      setMessage({ type: 'success', text: `Camera ON. Location: ${locationData.city}` });
+
+    } catch (err) {
+      handleStopCamera();
+      // Handle combined error messages
+      if (err.name === 'NotAllowedError' || err.name === 'PermissionDeniedError') {
+        setMessage({ type: 'error', text: '🚨 Permission denied. Enable camera/location in settings.' });
+      } else {
+        setMessage({ type: 'error', text: '🚨 Camera failed. Using mock photo.' });
+        setCapturedImage(`https://placehold.co/400x300/14b8a6/FFFFFF?text=Asset+Photo+FALLBACK`);
+      }
+    }
+  };
+
+  // Function to stop the camera stream
+  const handleStopCamera = () => {
+    if (streamRef.current) {
+      streamRef.current.getTracks().forEach(track => track.stop());
+    }
+    setIsCameraActive(false);
+  };
+
+  // Function to capture the photo from the stream
+  const handleCapturePhoto = () => {
+    if (videoRef.current) {
+      const canvas = document.createElement('canvas');
+      canvas.width = videoRef.current.videoWidth;
+      canvas.height = videoRef.current.videoHeight;
+      const ctx = canvas.getContext('2d');
+      ctx.drawImage(videoRef.current, 0, 0, canvas.width, canvas.height);
+      
+      const photoDataUrl = canvas.toDataURL('image/png');
+      setCapturedImage(photoDataUrl);
+      
+      // Stop the camera immediately after capture
+      handleStopCamera();
+      setMessage({ type: 'info', text: `Photo captured in ${currentCity}.` });
+    }
+  };
+
 
   const handleSaveLocally = useCallback(() => {
     if (!capturedImage) {
@@ -64,10 +159,11 @@ const BeneficiaryApp = ({ onSyncComplete }) => {
     setIsProcessing(true);
     const newUpload = {
       id: generateMockCaseId(),
-      assetImage: capturedImage,
+      assetImage: capturedImage, 
       beneficiary: 'Beneficiary ID: AB001', 
       timestamp: new Date().toISOString(),
-      gps: '12.9716° N, 77.5946° E (Mocked)',
+      gps: currentCity || 'Location Data Missing', // Use City Name for saving!
+      coordinates: currentGps, // Save raw coordinates separately for officer detailed view
       status: 'Awaiting Sync',
       isSynced: false,
     };
@@ -76,12 +172,14 @@ const BeneficiaryApp = ({ onSyncComplete }) => {
     saveLocalUploads(updatedUploads);
     setLocalUploads(updatedUploads);
     setCapturedImage(null);
+    setCurrentGps(null); 
+    setCurrentCity(null); // Clear all status after save
 
     setTimeout(() => {
       setIsProcessing(false);
       setMessage({ type: 'success', text: `✅ Proof saved locally! Case ID: ${newUpload.id}.` });
     }, 1000);
-  }, [capturedImage, localUploads]);
+  }, [capturedImage, localUploads, currentGps, currentCity]); 
 
   const handleSyncToBackend = useCallback(async () => {
     if (localUploads.length === 0) {
@@ -97,7 +195,7 @@ const BeneficiaryApp = ({ onSyncComplete }) => {
     setMessage({ type: 'info', text: `Starting sync of ${localUploads.length} case(s) to the cloud...` });
 
     try {
-        const response = await fetch(`${API_BASE_URL}/api/upload`, {
+        const response = await fetch(`http://localhost:5000/api/upload`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ cases: localUploads }),
@@ -117,7 +215,7 @@ const BeneficiaryApp = ({ onSyncComplete }) => {
 
     } catch (error) {
         console.error("Sync Error:", error);
-        setMessage({ type: 'error', text: `Sync failed! Is the backend running at ${API_BASE_URL}?` });
+        setMessage({ type: 'error', text: `Sync failed! Is the backend running at http://localhost:5000?` });
     } finally {
         setIsProcessing(false);
     }
@@ -129,6 +227,13 @@ const BeneficiaryApp = ({ onSyncComplete }) => {
         setMessage({ type: 'warning', text: `🌐 Network restored. ${localUploads.length} pending case(s) ready to sync.` });
     }
   }, [isOnline, localUploads.length]);
+  
+  // Cleanup camera stream when component unmounts
+  useEffect(() => {
+    return () => {
+      handleStopCamera();
+    };
+  }, []);
 
   return (
     <div className="flex justify-center items-start h-full p-4">
@@ -139,7 +244,7 @@ const BeneficiaryApp = ({ onSyncComplete }) => {
           
           {/* Status Bar / Header (VIBRANT) */}
           <div className="p-3 bg-indigo-700 text-white flex justify-between items-center shadow-lg">
-            <h3 className="font-extrabold text-lg"><center>धन साक्षी (Dhan Sakshi)</center></h3>
+            <h3 className="font-extrabold text-lg">धन साक्षी (Dhan Sakshi)</h3>
             <div className="flex items-center space-x-2">
                 <span className="text-sm">{new Date().toLocaleTimeString('en-US', {hour: '2-digit', minute:'2-digit'})}</span>
                 <SyncIcon className="w-5 h-5 text-teal-300"/>
@@ -152,23 +257,43 @@ const BeneficiaryApp = ({ onSyncComplete }) => {
             {/* 1. Asset Capture */}
             <div className="p-4 border border-gray-200 rounded-xl bg-gray-50 shadow-sm">
               <p className="font-extrabold text-gray-800 mb-3 flex items-center"><Camera className='w-4 h-4 mr-2 text-teal-600'/> 1. Capture Loan Asset Proof</p>
-              {capturedImage ? (
-                <div className="border-4 border-teal-600 p-1 rounded-lg bg-gray-200 mb-3 shadow-inner">
-                  <img src={capturedImage} alt="Captured Asset" className="w-full h-auto rounded-md" />
-                </div>
-              ) : (
-                <div className="h-28 bg-gray-100 border-2 border-dashed border-gray-400 rounded-lg flex items-center justify-center mb-3">
-                  <Camera className="w-8 h-8 text-gray-500" />
-                  <p className="ml-2 text-gray-600 text-sm">Tap to Capture...</p>
-                </div>
-              )}
+              
+              {/* Camera Stream/Captured Image Display */}
+              <div className="relative w-full h-40 bg-black rounded-lg mb-3 flex items-center justify-center overflow-hidden">
+                {isCameraActive && (
+                    <video ref={videoRef} autoPlay playsInline muted className="w-full h-full object-cover"></video>
+                )}
+                {!isCameraActive && capturedImage && (
+                    <img src={capturedImage} alt="Captured Asset" className="w-full h-full object-cover" />
+                )}
+                {!isCameraActive && !capturedImage && (
+                    <p className="text-white text-sm">Camera Inactive. Click 'Open Camera' to start.</p>
+                )}
+              </div>
 
-              <button
-                onClick={handleCaptureImage}
-                className="w-full bg-teal-600 text-white py-3 rounded-xl hover:bg-teal-700 transition duration-300 shadow-2xl mobile-btn glow-shadow-teal"
-              >
-                <Camera className="w-5 h-5 mr-2"/> Capture Proof
-              </button>
+              {/* GeoTag Display */}
+              <p className={`text-sm mb-3 font-semibold flex items-center ${currentCity ? 'text-green-600' : 'text-gray-500'}`}>
+                <MapPin className='w-4 h-4 mr-2'/> 
+                Location Status: **{currentCity || 'Awaiting GeoTag...'}**
+              </p>
+
+              {/* Camera Control Buttons */}
+              {!isCameraActive ? (
+                <button
+                    onClick={startCamera}
+                    className="w-full bg-teal-600 text-white py-3 rounded-xl hover:bg-teal-700 transition duration-300 shadow-2xl mobile-btn glow-shadow-teal"
+                >
+                    <Camera className="w-5 h-5 mr-2"/> Open Camera & Get Location
+                </button>
+              ) : (
+                <button
+                    onClick={handleCapturePhoto}
+                    disabled={!currentCity} // Disable if location hasn't been fetched
+                    className={`w-full py-3 rounded-xl transition duration-300 shadow-2xl mobile-btn ${!currentCity ? 'bg-gray-400 cursor-not-allowed' : 'bg-red-600 text-white hover:bg-red-700'}`}
+                >
+                    <Camera className="w-5 h-5 mr-2"/> Snap Photo (Location Ready)
+                </button>
+              )}
             </div>
 
             {/* 2. Upload Status & Actions */}
@@ -190,9 +315,9 @@ const BeneficiaryApp = ({ onSyncComplete }) => {
 
               <button
                 onClick={handleSaveLocally}
-                disabled={isProcessing || !capturedImage}
+                disabled={isProcessing || !capturedImage || isCameraActive}
                 className={`w-full py-3 rounded-xl mb-3 transition duration-300 shadow-2xl mobile-btn glow-shadow-indigo ${
-                  isProcessing || !capturedImage
+                  isProcessing || !capturedImage || isCameraActive
                     ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
                     : 'bg-indigo-600 text-white hover:bg-indigo-700'
                 }`}
@@ -241,6 +366,7 @@ const BeneficiaryApp = ({ onSyncComplete }) => {
 };
 
 // --- Component: Officer Review Dashboard ---
+// (Component logic remains the same as it primarily fetches data)
 
 const OfficerDashboard = ({ fetchTrigger }) => {
   const [cases, setCases] = useState([]);
@@ -250,7 +376,7 @@ const OfficerDashboard = ({ fetchTrigger }) => {
   const fetchCases = useCallback(async () => {
     setIsLoading(true);
     try {
-        const response = await fetch(`${API_BASE_URL}/api/cases`);
+        const response = await fetch(`http://localhost:5000/api/cases`);
         if (!response.ok) throw new Error('Failed to fetch cases from backend.');
         
         const data = await response.json();
@@ -270,7 +396,7 @@ const OfficerDashboard = ({ fetchTrigger }) => {
 
   const handleReviewAction = useCallback(async (caseId, action) => {
     try {
-        const response = await fetch(`${API_BASE_URL}/api/review`, {
+        const response = await fetch(`http://localhost:5000/api/review`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ case_id: caseId, action }),
@@ -363,10 +489,20 @@ const OfficerDashboard = ({ fetchTrigger }) => {
               {/* ASSET EVIDENCE CARD */}
               <div className="space-y-4 p-6 bg-gray-800 rounded-xl shadow-inner border-t-4 border-teal-500 dashboard-card">
                 <p className="font-bold text-xl border-b border-gray-700 pb-2 text-teal-400 text-shadow-teal">Loan Asset Evidence</p>
-                <img src={selectedCase.assetImage} alt="Asset Proof" className="w-full h-auto rounded-xl shadow-lg border-2 border-gray-700" />
+                {/* Display Captured Image here */}
+                {selectedCase.assetImage && (
+                    <img src={selectedCase.assetImage} alt="Asset Proof" className="w-full h-auto rounded-xl shadow-lg border-2 border-gray-700" />
+                )}
+                {!selectedCase.assetImage && (
+                    <div className="h-40 bg-gray-700 rounded-xl flex items-center justify-center text-gray-400">Image Data Missing</div>
+                )}
+                
                 <div className="flex items-center text-sm text-gray-400 mt-4">
                   <MapPin className="w-4 h-4 mr-2 text-teal-500"/>
                   **GeoTag:** {selectedCase.gps}
+                </div>
+                <div className="text-sm text-gray-400">
+                  **Raw Coordinates:** {selectedCase.coordinates || 'N/A'}
                 </div>
                 <div className="text-sm text-gray-400">
                   **Upload Date:** {new Date(selectedCase.timestamp).toLocaleString()}
@@ -513,8 +649,8 @@ const App = () => {
             <h1 className="text-5xl font-extrabold text-indigo-400 flex items-center text-shadow-white">
                 <Users className="w-10 h-10 mr-4 text-teal-400"/>
                 <div className="flex flex-col">
-                  <span><center>धन साक्षी (Dhan Sakshi)</center></span>
-                  <p className="text-gray-400 text-lg font-medium mt-1"><center>Empowering Rural Livelihoods with Tech-Driven Microfinance</center></p>
+                  <span>धन साक्षी (Dhan Sakshi)</span>
+                  <p className="text-gray-400 text-lg font-medium mt-1">Loan Utilization Tracking Platform | Theme: Smart Automation</p>
                 </div>
             </h1>
         </header>
