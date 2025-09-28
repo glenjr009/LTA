@@ -32,35 +32,9 @@ Frontend (Mobile Prototype)
 Backend (API + Logic)  
 - Node.js + Express  
 - Mock DBs: MongoDB (for media metadata) & PostgreSQL (for structured case data)  
-- Endpoints for syncing, officer review, and AI simulation  
+- Endpoints for syncing, officer review, and AI simulation
 
----
-
-## ⚡ How to Run It  
-
-### Prerequisite: Node.js installed  
-
-### Backend (Port 5000)  
-```bash
-cd backend
-npm install
-node index.js
-
-### You should see:
-Node.js Backend Server running on http://localhost:5000
-
-Frontend (Port 3000)
-
-(Keep the backend running in another terminal)
-
-cd frontend
-npm install
-npm start
-
-Your browser will automatically open at 👉 http://localhost:3000
-
-
----
+  
 
 ### 💡 Why it matters  
 
@@ -81,9 +55,31 @@ Your browser will automatically open at 👉 http://localhost:3000
 ### 🏆 Built by  
 
 Hexa Titans with ❤️, coffee, and a lot of debugging.  
-
 ---
 
-👉 This way, everything inside the triple backticks is **only the copy-paste setup part**, and the “Why it matters / What’s Next / Built by” sections live outside.  
 
-Do you also want me to add **GitHub shields/badges** (like tech stack icons: React, Node.js, etc.) at the top to make the README pop visually?
+## ⚡ How to Run It  
+
+### Prerequisite: Node.js installed  
+
+### Backend (Port 5000)  
+First, open a terminal and move into the backend folder:  
+```bash
+cd backend
+npm install
+node index.js
+
+If everything went fine, you should see:
+Node.js Backend Server running on http://localhost:5000
+
+Frontend (Port 3000)
+
+In another terminal, move into the frontend folder:
+
+cd frontend
+npm install
+npm start
+
+
+Your browser should automatically open at 👉 http://localhost:3000
+
