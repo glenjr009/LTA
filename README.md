@@ -34,30 +34,7 @@ Backend (API + Logic)
 - Mock DBs: MongoDB (for media metadata) & PostgreSQL (for structured case data)  
 - Endpoints for syncing, officer review, and AI simulation
 
-  
-
-### 💡 Why it matters  
-
-🌍 Works in rural areas where internet is patchy  
-⚡ Officers spend less time chasing genuine borrowers  
-🛡️ Banks save money and get tamper-proof transparency  
-
 ---
-
-### 🚀 What’s Next  
-
-- Real blockchain integration  
-- Smarter AI fraud detection models  
-- Hooking up with real databases for scale  
-
----
-
-### 🏆 Built by  
-
-Hexa Titans with ❤️, coffee, and a lot of debugging.  
----
-
-
 ## ⚡ How to Run It  
 
 ### Prerequisite: Node.js installed  
@@ -72,14 +49,35 @@ node index.js
 ### If everything went fine, you should see:
 Node.js Backend Server running on http://localhost:5000
 
-Frontend (Port 3000)
-
+### Frontend (Port 3000)  
 In another terminal, move into the frontend folder:
 
+```bash
 cd frontend
 npm install
 npm start
 
 
+
 Your browser should automatically open at 👉 http://localhost:3000
 
+
+### 💡 Why it matters
+
+🌍 Works in rural areas where internet is patchy
+
+⚡ Officers spend less time chasing genuine borrowers
+
+🛡️ Banks save money and get tamper-proof transparency
+
+🚀 What’s Next
+
+Real blockchain integration
+
+Smarter AI fraud detection models
+
+Hooking up with real databases for scale
+
+🏆 Built by
+
+Hexa Titans with ❤️, coffee, and a lot of debugging
