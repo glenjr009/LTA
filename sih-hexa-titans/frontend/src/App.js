@@ -115,9 +115,9 @@ const BeneficiaryApp = ({ onSyncComplete }) => {
       handleStopCamera();
       // Handle combined error messages
       if (err.name === 'NotAllowedError' || err.name === 'PermissionDeniedError') {
-        setMessage({ type: 'error', text: '🚨 Permission denied. Enable camera/location in settings.' });
+        setMessage({ type: 'error', text: '🚨 Permission denied. Kindly enable camera/location in settings.' });
       } else {
-        setMessage({ type: 'error', text: '🚨 Camera failed. Using mock photo.' });
+        setMessage({ type: 'error', text: '🚨 Camera failed. Using mock photo for demo purpose.' });
         setCapturedImage(`https://placehold.co/400x300/14b8a6/FFFFFF?text=Asset+Photo+FALLBACK`);
       }
     }
@@ -244,7 +244,7 @@ const BeneficiaryApp = ({ onSyncComplete }) => {
           
           {/* Status Bar / Header (VIBRANT) */}
           <div className="p-3 bg-indigo-700 text-white flex justify-between items-center shadow-lg">
-            <h3 className="font-extrabold text-lg">धन साक्षी (Dhan Sakshi)</h3>
+            <h3 className="font-extrabold text-lg"><center>धन साक्षी (Dhan Sakshi)</center></h3>
             <div className="flex items-center space-x-2">
                 <span className="text-sm">{new Date().toLocaleTimeString('en-US', {hour: '2-digit', minute:'2-digit'})}</span>
                 <SyncIcon className="w-5 h-5 text-teal-300"/>
@@ -650,7 +650,7 @@ const App = () => {
                 <Users className="w-10 h-10 mr-4 text-teal-400"/>
                 <div className="flex flex-col">
                   <span>धन साक्षी (Dhan Sakshi)</span>
-                  <p className="text-gray-400 text-lg font-medium mt-1">Loan Utilization Tracking Platform | Theme: Smart Automation</p>
+                  <p className="text-gray-400 text-lg font-medium mt-1"><center>Loan Utilization Tracking Platform | Theme: Smart Automation</center></p>
                 </div>
             </h1>
         </header>
