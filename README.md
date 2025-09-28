@@ -59,20 +59,31 @@ npm start
 
 Your browser will automatically open at 👉 http://localhost:3000
 
-💡 Why it matters
 
-🌍 Works in rural areas where internet is patchy
-⚡ Officers spend less time chasing genuine borrowers
-🛡️ Banks save money and get tamper-proof transparency
+---
 
-🚀 What’s Next
+### 💡 Why it matters  
 
-Real blockchain integration
+🌍 Works in rural areas where internet is patchy  
+⚡ Officers spend less time chasing genuine borrowers  
+🛡️ Banks save money and get tamper-proof transparency  
 
-Smarter AI fraud detection models
+---
 
-Hooking up with real databases for scale
+### 🚀 What’s Next  
 
-🏆 Built by
+- Real blockchain integration  
+- Smarter AI fraud detection models  
+- Hooking up with real databases for scale  
 
-Hexa Titans with ❤️, coffee, and a lot of debugging.
+---
+
+### 🏆 Built by  
+
+Hexa Titans with ❤️, coffee, and a lot of debugging.  
+
+---
+
+👉 This way, everything inside the triple backticks is **only the copy-paste setup part**, and the “Why it matters / What’s Next / Built by” sections live outside.  
+
+Do you also want me to add **GitHub shields/badges** (like tech stack icons: React, Node.js, etc.) at the top to make the README pop visually?
