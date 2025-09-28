@@ -69,7 +69,7 @@ cd backend
 npm install
 node index.js
 
-If everything went fine, you should see:
+### If everything went fine, you should see:
 Node.js Backend Server running on http://localhost:5000
 
 Frontend (Port 3000)
